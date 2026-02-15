@@ -1,3 +1,73 @@
+🚀 Top 1000 GitHub Repositories Parser
+https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg
+https://img.shields.io/badge/python-3.8+-blue.svg
+https://img.shields.io/badge/API-GitHub-brightgreen
+
+🇬🇧 English | 🇷🇺 Русский
+
+<a name="english"></a>
+
+🇬🇧 English
+📋 Overview
+This parser collects metadata from the 1000 most-starred GitHub repositories and analyzes the presence of key community and automation files:
+
+CODE_OF_CONDUCT
+
+CONTRIBUTING
+
+README
+
+.github/workflows folder (GitHub Actions)
+
+The architecture is designed with respect to GitHub API rate limits (5000 requests/hour for authenticated users).
+
+🏗️ Architecture
+The parser consists of four logical components that work sequentially in a single thread:
+
+Component	Description
+Request Manager	Forms HTTP requests, manages authorization headers, and handles responses.
+Metadata Collector	Uses the Search API to retrieve the list of top 1000 repositories.
+Content Analyzer	For each repository, fetches the root directory contents and detects target files.
+Saving Module	Aggregates results into a pandas DataFrame and exports to CSV.
+⏱️ Delays (time.sleep) are inserted between API calls to stay within rate limits.
+
+🔄 Step‑by‑Step Process
+1. Retrieving the Repository List
+Loop over 10 pages (100 results per page) of the Search API.
+
+Query: q=stars:>10000&sort=stars&order=desc
+
+Pause 5 seconds after each page.
+
+Store results in all_repos list.
+
+2. Detailed Analysis of Each Repository
+For every repository in all_repos:
+
+Send a request to the Contents API: /repos/{full_name}/contents/
+
+Check for target files (case‑insensitive):
+
+has_coc – any file containing CODE_OF_CONDUCT
+
+has_contributing – any file containing CONTRIBUTING
+
+has_readme – any file containing README
+
+has_workflows – presence of a .github folder
+
+Extract metadata: name, organization, language, stars, forks, open_issues, age_days, description
+
+Pause 1.5 seconds between requests.
+
+3. Saving the Results
+Collect all records in a list of dictionaries.
+
+Create a pandas DataFrame and save as top_1000_os_rules.csv (UTF‑8 encoded).
+
+📊 Sequence Diagram
+
+
 # Architecture of the Top 1000 GitHub Repositories Parser
 
 This parser is designed to collect information about the 1000 most-starred GitHub repositories and analyze the presence of key files: CODE_OF_CONDUCT, CONTRIBUTING, README, and the .github/workflows folder. The architecture is built around three sequential stages, taking into account GitHub API rate limits.
